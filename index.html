@@ -1,17 +1,295 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MovieBox India - Watch Hindi Movies, Anime & TV Shows Free HD</title>
-    <meta name="description" content="Watch latest Hindi movies, Hindi dubbed anime, English movies with Hindi audio. Free HD streaming. All content in Hindi & English.">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenWA - Full WhatsApp System</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #dadbd4; height: 100vh; display: flex; justify-content: center; align-items: center; }
+        
+        /* Login Screen */
+        #login-screen { position: fixed; width: 100%; height: 100%; background: #00a884; display: flex; justify-content: center; align-items: center; z-index: 100; }
+        .login-card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 320px; text-align: center; }
+        .login-card h2 { margin-bottom: 20px; color: #333; }
+        .login-card input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; }
+        .login-card button { width: 100%; padding: 12px; background: #00a884; border: none; color: white; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        .error-msg { color: red; font-size: 14px; margin-bottom: 10px; display: none; }
+
+        /* Chat App Container */
+        #chat-app { display: none; width: 95%; max-width: 1300px; height: 92vh; background: #f0f2f5; box-shadow: 0 4px 20px rgba(0,0,0,0.15); display: flex; border-radius: 5px; overflow: hidden; }
+        
+        /* Sidebar */
+        .sidebar { width: 35%; background: white; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; }
+        .sidebar-header { padding: 15px; background: #f0f2f5; font-weight: bold; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center; }
+        .sidebar-search { padding: 10px; background: #fff; }
+        .sidebar-search input { width: 100%; padding: 8px 12px; border-radius: 20px; border: 1px solid #e2e8f0; background: #f0f2f5; outline: none; }
+        
+        .chat-list { overflow-y: auto; flex: 1; }
+        .chat-item { display: flex; align-items: center; padding: 12px 15px; border-bottom: 1px solid #f0f2f5; cursor: pointer; gap: 12px; }
+        .chat-item:hover { background: #f5f6f6; }
+        .chat-avatar { width: 45px; height: 45px; border-radius: 50%; background: #dfe5e7; display: flex; justify-content: center; align-items: center; font-weight: bold; color: #555; overflow: hidden; }
+        .chat-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .chat-info { flex: 1; }
+        .chat-name { font-weight: 600; color: #111; font-size: 15px; }
+        .chat-last-msg { font-size: 13px; color: #667781; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
+
+        /* Chat Window */
+        .chat-container { width: 65%; display: flex; flex-direction: column; background: #efeae2; }
+        .chat-header { padding: 12px 15px; background: #f0f2f5; display: flex; align-items: center; border-bottom: 1px solid #ddd; gap: 12px; }
+        .chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+        
+        .message { max-width: 60%; padding: 8px 12px; border-radius: 8px; font-size: 14px; line-height: 1.4; word-wrap: break-word; position: relative; }
+        .message.sent { background: #d9fdd3; align-self: flex-end; border-top-right-radius: 0; }
+        .message.received { background: #ffffff; align-self: flex-start; border-top-left-radius: 0; }
+        
+        /* Chat Input Area */
+        .chat-input-area { padding: 10px 20px; background: #f0f2f5; display: flex; align-items: center; gap: 10px; position: relative; }
+        .chat-input-area input { flex: 1; padding: 12px 15px; border-radius: 20px; border: none; outline: none; font-size: 14px; }
+        .chat-input-area button { background: #00a884; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; }
+        .emoji-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: #54656f; }
+        
+        /* Emoji Picker Box */
+        #emoji-picker { position: absolute; bottom: 65px; left: 20px; background: white; border: 1px solid #ccc; border-radius: 8px; padding: 10px; display: none; grid-template-columns: repeat(5, 1fr); gap: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        #emoji-picker span { font-size: 22px; cursor: pointer; text-align: center; padding: 5px; border-radius: 4px; }
+        #emoji-picker span:hover { background: #f0f2f5; }
+
+        .no-chat-selected { flex: 1; display: flex; justify-content: center; align-items: center; color: #8696a0; font-size: 16px; background: #f8f9fa; }
+    </style>
+</head>
+<body>
+
+    <!-- Login Screen -->
+    <div id="login-screen">
+        <div class="login-card">
+            <h2>Employee Portal</h2>
+            <div id="error" class="error-msg">ভুল পাসওয়ার্ড! (সঠিক পাসওয়ার্ড: 12345)</div>
+            <input type="password" id="password" placeholder="Password (12345)">
+            <button onclick="checkLogin()">Login</button>
+        </div>
+    </div>
+
+    <!-- WhatsApp Style Chat App -->
+    <div id="chat-app" style="display: none;">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <span>💬 Chats</span>
+                <button onclick="loadChats()" style="background:none; border:none; cursor:pointer; font-size:16px;" title="Refresh Chats">🔄</button>
+            </div>
+            <div class="sidebar-search">
+                <input type="text" id="search-box" placeholder="Search or start new chat (e.g. 8801...)">
+            </div>
+            <div class="chat-list" id="chat-list-container">
+                <!-- Chat items loaded dynamically -->
+            </div>
+        </div>
+
+        <!-- Chat Main Area -->
+        <div id="no-chat" class="no-chat-selected">
+            <p>চ্যাট শুরু করতে বাম পাশ থেকে চ্যাট সিলেক্ট করুন অথবা নতুন নম্বর সার্চ করুন।</p>
+        </div>
+
+        <div class="chat-container" id="active-chat-box" style="display: none;">
+            <div class="chat-header">
+                <div class="chat-avatar" id="active-avatar">👤</div>
+                <div>
+                    <div class="chat-name" id="active-name">Chat Name</div>
+                    <div style="font-size: 11px; color: #667781;" id="active-status">Online</div>
+                </div>
+            </div>
+            <div class="chat-messages" id="message-box">
+                <!-- Messages -->
+            </div>
+            
+            <!-- Emoji Picker -->
+            <div id="emoji-picker">
+                <span onclick="addEmoji('😊')">😊</span>
+                <span onclick="addEmoji('😂')">😂</span>
+                <span onclick="addEmoji('❤️')">❤️</span>
+                <span onclick="addEmoji('👍️')">👍️</span>
+                <span onclick="addEmoji('🔥')">🔥</span>
+                <span onclick="addEmoji('🙏')">🙏</span>
+                <span onclick="addEmoji('✨')">✨</span>
+                <span onclick="addEmoji('🎉')">🎉</span>
+                <span onclick="addEmoji('😎')">😎</span>
+                <span onclick="addEmoji('🚀')">🚀</span>
+            </div>
+
+            <div class="chat-input-area">
+                <button class="emoji-btn" onclick="toggleEmojiPicker()">😀</button>
+                <input type="text" id="message-input" placeholder="Type a message..." onkeypress="handleKeyPress(event)">
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CORRECT_PASSWORD = "12345";
+        const API_KEY = "owa_k1_abe82e2f1a5ed34df894510380a4e9c2b65ca1eb8cac6668b8bc20db1e5e80df";
+        const SESSION_ID = "a65d9ad3-fad8-43aa-af07-4e33a053bca7";
+        const BASE_URL = "http://localhost:2785";
+
+        let currentRecipient = "";
+
+        function checkLogin() {
+            const pass = document.getElementById('password').value;
+            if (pass === CORRECT_PASSWORD) {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('chat-app').style.display = 'flex';
+                loadChats();
+            } else {
+                document.getElementById('error').style.display = 'block';
+            }
+        }
+
+        // Fetch WhatsApp Chats & Contacts
+        async function loadChats() {
+            const listContainer = document.getElementById('chat-list-container');
+            listContainer.innerHTML = '<div style="text-align:center; padding:20px; color:#667781;">Loading chats...</div>';
+
+            try {
+                const response = await fetch(`${BASE_URL}/api/sessions/${SESSION_ID}/chats`, {
+                    headers: { 'x-api-key': API_KEY }
+                });
+                const data = await response.json();
+                
+                listContainer.innerHTML = '';
+                if(data && data.length > 0) {
+                    data.forEach(chat => {
+                        const phone = chat.id || chat.remoteJid || chat.phone;
+                        const name = chat.name || phone;
+                        const avatarUrl = chat.profilePicUrl || '';
+
+                        const div = document.createElement('div');
+                        div.className = 'chat-item';
+                        div.onclick = () => openChat(phone, name, avatarUrl);
+                        
+                        div.innerHTML = `
+                            <div class="chat-avatar">
+                                ${avatarUrl ? `<img src="${avatarUrl}" alt="pic">` : name.charAt(0).toUpperCase()}
+                            </div>
+                            <div class="chat-info">
+                                <div class="chat-name">${name}</div>
+                                <div class="chat-last-msg">${chat.lastMessage || phone}</div>
+                            </div>
+                        `;
+                        listContainer.appendChild(div);
+                    });
+                } else {
+                    listContainer.innerHTML = '<div style="text-align:center; padding:20px; color:#667781;">কোনো চ্যাট পাওয়া যায়নি।</div>';
+                }
+            } catch (err) {
+                console.error(err);
+                listContainer.innerHTML = '<div style="text-align:center; padding:20px; color:red;">সার্ভার কানেকশন এরর!</div>';
+            }
+        }
+
+        async function openChat(phone, name, avatarUrl) {
+            currentRecipient = phone;
+            document.getElementById('no-chat').style.display = 'none';
+            document.getElementById('active-chat-box').style.display = 'flex';
+            document.getElementById('active-name').innerText = name;
+            
+            const avatarBox = document.getElementById('active-avatar');
+            if(avatarUrl) {
+                avatarBox.innerHTML = `<img src="${avatarUrl}" alt="pic">`;
+            } else {
+                avatarBox.innerHTML = name.charAt(0).toUpperCase();
+            }
+
+            loadMessages(phone);
+        }
+
+        // Load Old Messages for selected chat
+        async function loadMessages(phone) {
+            const messageBox = document.getElementById('message-box');
+            messageBox.innerHTML = '<div style="text-align:center; color:#8696a0; font-size:12px;">Loading messages...</div>';
+
+            try {
+                const response = await fetch(`${BASE_URL}/api/sessions/${SESSION_ID}/chats/${phone}/messages`, {
+                    headers: { 'x-api-key': API_KEY }
+                });
+                const messages = await response.json();
+                
+                messageBox.innerHTML = '';
+                if(messages && messages.length > 0) {
+                    messages.forEach(msg => {
+                        const type = msg.fromMe ? 'sent' : 'received';
+                        appendMessageUI(msg.body || msg.text || '[Media/Other]', type);
+                    });
+                } else {
+                    messageBox.innerHTML = '<div style="text-align:center; color:#8696a0; font-size:12px;">কোনো পূর্বের মেসেজ নেই। নতুন চ্যাট শুরু করুন।</div>';
+                }
+            } catch (err) {
+                messageBox.innerHTML = '<div style="text-align:center; color:#8696a0; font-size:12px;">হিস্ট্রি লোড করা যায়নি।</div>';
+            }
+        }
+
+        function appendMessageUI(text, type) {
+            const box = document.getElementById('message-box');
+            const div = document.createElement('div');
+            div.className = `message ${type}`;
+            div.innerText = text;
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('message-input');
+            const message = input.value.trim();
+            if (!message || !currentRecipient) return;
+
+            try {
+                const response = await fetch(`${BASE_URL}/api/sessions/${SESSION_ID}/messages`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': API_KEY
+                    },
+                    body: JSON.stringify({
+                        phone: currentRecipient,
+                        message: message
+                    })
+                });
+
+                if (response.ok) {
+                    appendMessageUI(message, 'sent');
+                    input.value = '';
+                } else {
+                    alert("মেসেজ পাঠানো ব্যর্থ হয়েছে!");
+                }
+            } catch (err) {
+                alert("সার্ভার কানেকশন প্রবলেম।");
+            }
+        }
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Emoji System
+        function toggleEmojiPicker() {
+            const picker = document.getElementById('emoji-picker');
+            picker.style.display = picker.style.display === 'grid' ? 'none' : 'grid';
+        }
+
+        function addEmoji(emoji) {
+            document.getElementById('message-input').value += emoji;
+            document.getElementById('emoji-picker').style.display = 'none';
+        }
+
+        // Search/New Chat functionality
+        document.getElementById('search-box').addEventListener('keypress', function(e) {
+            if(e.key === 'Enter') {
+                const phone = this.value.trim();
+                if(phone) {
+                    openChat(phone, phone, '');
+                }
+            }
+        });
+    </script>
+</body>
 </html>
